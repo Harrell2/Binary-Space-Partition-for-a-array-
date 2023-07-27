@@ -1,12 +1,12 @@
 import numpy as np
 import random
-
+Tree = []
 def start():
     map = np.zeros((60,100), order = "F")
     return map
-Tree = []
+
+
 class node:
-    
     """
     a class that holds the array of a sub map and its top right corners xy
     each node will be added to the Tree list so it will be easier to navigate and find its parent node
@@ -22,13 +22,12 @@ def split(map, min_deviation, max_deviation):
     min_deviation and max is to control how far from the center the split will be
     this function will return a list of two sub maps
     """
-
     #0 is y or horizontal slice while 1 is x or vertical slice
     direction = 0
-    
     #checks if the width of the map is smaller than its length, used to avoid skinny rooms
     if map.shape[0] < map.shape[1]:
         direction = 1
+        
     #finds the dimensions of the side we chose(x or y)
     size = map.shape[direction]
     #finds where we are going to cut the map
@@ -108,15 +107,13 @@ def recursive_partitions(depth, main_map):
     popping = partitions(main_map,-1)
     new_maps = popping[0]
     pointer = popping[1]
-    #loops through all partitions execpt the first and last
-    for i in range(depth - 2):
+    #loops through all partitions execpt the first
+    for i in range(depth - 1):
         #gets the sub maps and pointer from previous partions
         popping = partitions(new_maps, pointer)
         new_maps = popping[0]
         pointer = popping[1]
-        
-    #final partition, used to find the last maps as that is whats being used
-    end_maps = partitions(new_maps, pointer)[0]
+    #finds the final maps created and puts them in a List with their xy    
+    end_maps = Tree[len(new_maps)-1:]
     
     return end_maps
-        
