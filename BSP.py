@@ -1,14 +1,10 @@
 import numpy as np
 import random
-import tcod
 
 def start():
     map = np.zeros((60,100), order = "F")
     return map
-
 Tree = []
-
-
 class node:
     
     """
@@ -124,10 +120,3 @@ def recursive_partitions(depth, main_map):
     
     return end_maps
         
-
-
-
-
-"""
-
-"""
