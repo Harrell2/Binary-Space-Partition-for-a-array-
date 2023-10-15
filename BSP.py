@@ -1,11 +1,12 @@
 import numpy as np
 import random
-Tree = []
-def start():
-    map = np.zeros((60,100), order = "F")
+import tcod
+
+def start(y, x):
+    map = np.zeros((y,x), order = "F")
     return map
 
-
+Tree = []
 class node:
     """
     a class that holds the array of a sub map and its top right corners xy
@@ -16,18 +17,29 @@ class node:
         self.y = y
         self.x = x
 
+class final_node:
+    """
+    the same as the node class but is used in the final splitting function
+    """
+    def __init__(self, map, y , x, type):
+        self.map = map
+        self.y = y
+        self.x = x
+        self.type = type
+
 def split(map, min_deviation, max_deviation):    
     """
     a funtion that takes an array and splits it into two arrays
     min_deviation and max is to control how far from the center the split will be
     this function will return a list of two sub maps
     """
+
     #0 is y or horizontal slice while 1 is x or vertical slice
     direction = 0
+    
     #checks if the width of the map is smaller than its length, used to avoid skinny rooms
     if map.shape[0] < map.shape[1]:
         direction = 1
-        
     #finds the dimensions of the side we chose(x or y)
     size = map.shape[direction]
     #finds where we are going to cut the map
@@ -114,6 +126,77 @@ def recursive_partitions(depth, main_map):
         new_maps = popping[0]
         pointer = popping[1]
     #finds the final maps created and puts them in a List with their xy    
-    end_maps = Tree[len(new_maps)-1:]
-    
+    end_map = Tree[len(new_maps)-1:]
+    end_maps = []
+    for count, z in enumerate(end_map):
+        if count > 8:
+            count -= 9
+        end_maps.append(final_node(z.map,z.y,z.x,type = count))
+        
     return end_maps
+        
+
+
+
+def main():
+    final_BSP = recursive_partitions(4, start(60,100))
+    screen_width = 100
+    screen_height = 60
+    tileset = tcod.tileset.load_tilesheet(
+        "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
+    )
+    
+    with tcod.context.new_terminal(
+        screen_width,
+        screen_height,
+        tileset = tileset,
+        title = "BSP",
+        vsync = True,
+    ) as context:
+        console = tcod.Console(screen_width, screen_height, order = "F")
+        
+        while True:
+            
+            for i in final_BSP:
+                x = i.x
+                y = i.y
+                map = i.map
+                type = i.type + 1
+                
+                for pos, value in np.ndenumerate(map):
+                         
+                    pos_y, *rest, pos_x = pos
+                    pos_x = pos_x + x
+                    pos_y = pos_y + y
+                    
+                    match type:
+                        case 1:
+                            color = (255,255,255)
+                        case 2:
+                            color = (255,255,0)
+                        case 3:
+                            color = (255,0,255)
+                        case 4:
+                            color = (255,0,255)
+                        case 5:
+                            color = (0,255,255)
+                        case 6:
+                            color = (100,255,100)
+                        case 7:
+                            color = (255,100,255)
+                        case 8:
+                            color = (50,50,50)
+                        
+                    console.print(x = pos_x, y = pos_y, string = " ", bg = color)
+                
+                    
+            context.present(console)
+            console.clear()
+            
+            
+            for event in tcod.event.wait():
+                if event.type == "QUIT":
+                    raise SystemExit()
+                    
+if __name__ == "__main__":
+    main()
